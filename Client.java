@@ -43,8 +43,6 @@ public class Client{
             if (this.objectOutputStream != null) {
                 this.objectOutputStream.close();
             }
-        } catch (IOException e) {
-            e.printStackTrace();
-        }
+        } catch (IOException e) {}
     }
 }

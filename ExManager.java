@@ -41,49 +41,28 @@ public class ExManager {
             network[n.get_id() - 1] = n;
         }
     }
+    public void terminate(){
+        for (int i = 0; i < network.length; i++) {
+            network[i].killClients();
+        }
+        for (int i = 0; i < network.length; i++) {
+            network[i].killServers();
+        }
+    }
 
 //  link state routing
     public void start() {
-        for (int i = 0; i < network.length; i++) {
+        ArrayList<Thread> threads = new ArrayList<>(num_of_nodes);
+        for (int i = 0; i < num_of_nodes; i++) {
             Thread thread = new Thread(network[i]);
+            threads.add(thread);
             thread.start();
         }
-//        System.out.println();
-//        try {
-//            Thread.sleep(500);
-//        } catch (InterruptedException e) {e.printStackTrace();}
-
-//        for (int i = 0; i < network.length; i++) { network[i].clients_initialize();}
-//
-////        ArrayList<Thread> threads = new ArrayList<Thread>();
-//        ArrayList<Boolean> status = new ArrayList<>(network.length);
-//        for (int i = 0; i < network.length; i++) {
-//            status.add(false);
-//            Thread thread = new Thread(network[i]);
-//            thread.start();
-////            threads.add(thread);
-//        }
-//        for (int i = 0; i < network.length; i++){
-//            if (network[i].finished)
-//                status.add(i, true);
-//        }
-//
-//        while (status.contains(false)){
-////            waits
-//            for (int i = 0; i < network.length; i++) {
-//                if (network[i].finished)
-//                    status.add(i, true);
-//            }
-////            System.out.print("f");
-//        }
-////        System.out.println();
-////        for (int i = 0; i < network.length; i++) {
-////            try{
-////                threads.get(i).join();
-////            } catch (InterruptedException e){
-////                e.printStackTrace();
-////            }
-////        }
-//        System.out.println();
+        for (int i = 0; i < num_of_nodes; i++) {
+            try {
+                threads.get(i).join(50);
+            } catch (InterruptedException e) {}
+        }
+        threads = null;
     }
 }

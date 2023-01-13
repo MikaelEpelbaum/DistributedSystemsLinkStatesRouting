@@ -68,7 +68,6 @@ public class Node extends Thread {
                 t.start();
                 servers.add(new Pair(neighbor.getKey(), s));
             } catch (IOException e){
-                e.printStackTrace();
             }
         }
 //        System.out.println(id +" servers have been initialised");
@@ -82,7 +81,6 @@ public class Node extends Thread {
                 Client c = new Client(socket, id);
                 clients.add(new Pair(neighbor.getKey(), c));
             } catch (IOException e){
-                e.printStackTrace();
             }
         }
 //        System.out.println(id + " clients have been initialised");
@@ -113,14 +111,16 @@ public class Node extends Thread {
     public void sendMessage(Pair<Integer[], Double[]> lv) {
 //      broadcast message to neighbors (clients)
         for(int i = 0; i < clients.size(); i++){
-            if (lv.getKey()[0].intValue() == clients.get(i).getKey().intValue())
-                continue;
-            Integer[] key = new Integer[]{lv.getKey()[0], clients.get(i).getKey()};
-            Pair<Integer[], Double[]> loc = new Pair<>(key,(Double[]) lv.getValue());
-//            lv.setKey(new Integer[]{lv.getKey()[0], neighbor.getKey()});
-            if (!(loc instanceof Pair))
-                System.out.println();
-            clients.get(i).getValue().sendMessage(loc);
+            clients.get(i).getValue().sendMessage(lv);
+//            if (lv.getKey()[0].intValue() == clients.get(i).getKey().intValue())
+//                continue;
+//
+//            Integer[] key = new Integer[]{lv.getKey()[0], clients.get(i).getKey()};
+//            Pair<Integer[], Double[]> loc = new Pair<>(key,(Double[]) lv.getValue());
+////            lv.setKey(new Integer[]{lv.getKey()[0], neighbor.getKey()});
+//            if (!(loc instanceof Pair))
+//                System.out.println();
+//            clients.get(i).getValue().sendMessage(loc);
         }
     }
 
@@ -143,7 +143,6 @@ public class Node extends Thread {
     }
 
 
-
     @Override
     public void run(){
         clients_initialize();
@@ -155,10 +154,11 @@ public class Node extends Thread {
 
         Pair<Integer[], Double[]> lv = new Pair<>(new Integer[]{id, 0}, matrix[id - 1]);
         sendMessage(lv);
-//        System.out.println(id +" has Sent his LV");
 
         while (updated.containsValue(false)) {
             ArrayList<Pair> responses = getMessages();
+            if(id == 1 && updated.get(3) && updated.get(4))
+                System.out.println();
             for (Pair lv_response : responses) {
                 Pair<Integer[], Double[]> response = (Pair<Integer[], Double[]>) lv_response;
                 int message_origin_id = response.getKey()[0].intValue();
@@ -175,6 +175,20 @@ public class Node extends Thread {
             c.getValue().closeEverything();
         }
         finished = true;
+        try{
+        Thread.sleep(100);}
+        catch (InterruptedException e) {}
+    }
+
+    public void killClients() {
+        for (Pair p : clients) {
+            ((Client) p.getValue()).closeEverything();
+        }
+    }
+    public void killServers(){
+        for(Pair p: servers) {
+            ((Server)p.getValue()).closeEverything();
+        }
     }
 
         public void print_graph () {

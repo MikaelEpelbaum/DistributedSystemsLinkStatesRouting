@@ -24,12 +24,20 @@ public class Server  extends Thread{
                 this.objectInputStream = new ObjectInputStream(socket.getInputStream());
                 Object o = objectInputStream.readObject();
                 Pair<Integer[], Double[]> temp = (Pair<Integer[], Double[]>) o;
-                if (temp != null)
+                if (temp != null) {
                     lv = temp;
-//                System.out.println("Server got message on port: " + socket.getLocalPort() + " message is: [" + lv.getValue()[0].intValue() + ", "+  lv.getValue()[1].intValue()+ ", "+  lv.getValue()[2].intValue() +"]");
+                    System.out.println("Got message");
+//                    System.out.println("Server got message on port: " + socket.getLocalPort() + " message is: [" + lv.getValue()[0].intValue() + ", " + lv.getValue()[1].intValue() + ", " + lv.getValue()[2].intValue() + "]");
+                }
             } catch(IOException | ClassNotFoundException e) { }
         }
     }
     public Pair<Integer[], Double[]>  getLv() {return lv;}
+
+    public void closeEverything() {
+        try{
+            this.serverSocket.close();
+        } catch (IOException e){}
+    }
 
 }
