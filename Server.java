@@ -5,6 +5,8 @@ import java.util.ArrayList;
 public class Server  extends Thread{
     private ServerSocket serverSocket;
     private Pair<Integer[], Double[]>  lv;
+    private ObjectOutputStream objectOutputStream;
+    private ObjectInputStream objectInputStream;
     public int id;
 
     public Server(ServerSocket serverSocket, int id){
@@ -15,21 +17,19 @@ public class Server  extends Thread{
 
     @Override
     public void run() {
-        try {
-            while (!serverSocket.isClosed()) {
+        while (!serverSocket.isClosed()) {
+            try {
                 Socket socket = serverSocket.accept();
-                ClientHandler clientHandler = new ClientHandler(socket);
-                Thread thread = new Thread(clientHandler);
-                thread.start();
-                lv = clientHandler.get_lv_recieved();
-                while (lv == null){
-                    lv = clientHandler.get_lv_recieved();
-                }
-                if (lv != null)
-                    System.out.println("Server got message on port: " + socket.getLocalPort() + " message is: [" + lv.getValue()[0].intValue() + ", "+  lv.getValue()[1].intValue()+ ", "+  lv.getValue()[2].intValue() +"]");
-            }
-        } catch (IOException e) {
+                this.objectOutputStream = new ObjectOutputStream(socket.getOutputStream());
+                this.objectInputStream = new ObjectInputStream(socket.getInputStream());
+                Object o = objectInputStream.readObject();
+                Pair<Integer[], Double[]> temp = (Pair<Integer[], Double[]>) o;
+                if (temp != null)
+                    lv = temp;
+//                System.out.println("Server got message on port: " + socket.getLocalPort() + " message is: [" + lv.getValue()[0].intValue() + ", "+  lv.getValue()[1].intValue()+ ", "+  lv.getValue()[2].intValue() +"]");
+            } catch(IOException | ClassNotFoundException e) { }
         }
     }
     public Pair<Integer[], Double[]>  getLv() {return lv;}
+
 }

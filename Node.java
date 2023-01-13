@@ -9,6 +9,7 @@ public class Node extends Thread {
     public ArrayList<Pair<Integer, Client>> clients;
     public int num_of_nodes;
     public Double[][] matrix;
+    public boolean finished;
 
     /**
      * Constructor
@@ -18,6 +19,7 @@ public class Node extends Thread {
      *                     calling update_matrix function
      */
     public Node(int num_of_nodes, String line) {
+        finished = false;
         this.num_of_nodes = num_of_nodes;
         matrix = new Double[num_of_nodes][num_of_nodes];
         for (int i = 0; i < num_of_nodes; i++) {
@@ -29,7 +31,6 @@ public class Node extends Thread {
         servers = new ArrayList<>(neighbors.size());
         clients = new ArrayList<>(neighbors.size());
         servers_initialize();
-//        clients_initialize();
     }
 
     public int get_id() {
@@ -62,8 +63,6 @@ public class Node extends Thread {
             try {
                 int port = ((Double) neighbor.getValue().get("listen")).intValue();
                 ServerSocket serverSocket = new ServerSocket(port);
-                serverSocket.setSoTimeout(10000);
-//                System.out.println(id +" is setting:" + port+ " has its server");
                 Server s = new Server(serverSocket, id);
                 Thread t = new Thread(s);
                 t.start();
@@ -72,22 +71,21 @@ public class Node extends Thread {
                 e.printStackTrace();
             }
         }
+//        System.out.println(id +" servers have been initialised");
     }
 
-    private void clients_initialize(){
+    public void clients_initialize(){
         for(Pair<Integer, Map> neighbor : neighbors){
             try {
                 int port = ((Double) neighbor.getValue().get("send")).intValue();
                 Socket socket = new Socket("localhost", port);
-                socket.setSoTimeout(1000);
                 Client c = new Client(socket, id);
-//                Thread t = new Thread(c);
-//                t.start();
                 clients.add(new Pair(neighbor.getKey(), c));
             } catch (IOException e){
                 e.printStackTrace();
             }
         }
+//        System.out.println(id + " clients have been initialised");
     }
 
 // 4 1 8.9 13821 6060 2 1.0 17757 28236 5 1.5 1603 24233 3 6.6 27781 1213
@@ -124,14 +122,6 @@ public class Node extends Thread {
                 System.out.println();
             clients.get(i).getValue().sendMessage(loc);
         }
-//        for(Pair<Integer, Client> neighbor : clients){
-//            if (lv.getKey()[0].intValue() == neighbor.getKey().intValue())
-//                continue;
-//            Integer[] key = new Integer[]{lv.getKey()[0], neighbor.getKey()};
-//            Pair<Integer[], Double[]> loc = new Pair<>(key, lv.getValue());
-////            lv.setKey(new Integer[]{lv.getKey()[0], neighbor.getKey()});
-//            neighbor.getValue().sendMessage(loc);
-//        }
     }
 
     public ArrayList<Pair> getMessages(){
@@ -155,9 +145,8 @@ public class Node extends Thread {
 
 
     @Override
-    public void run() {
+    public void run(){
         clients_initialize();
-
         Map<Integer, Boolean> updated = new HashMap<>();
         for (int i = 0; i < num_of_nodes+1; i++)
             updated.put(i, false);
@@ -166,6 +155,7 @@ public class Node extends Thread {
 
         Pair<Integer[], Double[]> lv = new Pair<>(new Integer[]{id, 0}, matrix[id - 1]);
         sendMessage(lv);
+//        System.out.println(id +" has Sent his LV");
 
         while (updated.containsValue(false)) {
             ArrayList<Pair> responses = getMessages();
@@ -181,15 +171,19 @@ public class Node extends Thread {
                 }
             }
         }
-        System.out.println();
+        for (Pair<Integer, Client> c : clients){
+            c.getValue().closeEverything();
+        }
+        finished = true;
     }
 
-//    todo: how should the printing graph look like? only relevant vector or all matrix?
         public void print_graph () {
             for(int i = 0; i<num_of_nodes; i++){
                 for(int j = 0; j<num_of_nodes; j++)
                 {
                     System.out.print(matrix[i][j]);
+                    if (j < num_of_nodes -1)
+                        System.out.print(", ");
                 }
                 System.out.println();
             }

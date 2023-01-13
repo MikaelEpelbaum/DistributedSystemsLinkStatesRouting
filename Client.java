@@ -6,19 +6,19 @@ public class Client{
 //    public class Client extends Thread{
 
     private Socket socket;
-    private Socket get_socket;
-    public Pair<Integer[], Double[]> lv_to_return;
     private ObjectOutputStream objectOutputStream;
+    private ObjectInputStream objectInputStream;
     private int id;
 
 
     public Client(Socket socket, int id){
         this.socket = socket;
-        this.get_socket = get_socket;
         this.id = id;
         try {
             OutputStream outputStream = socket.getOutputStream();
             this.objectOutputStream = new ObjectOutputStream(outputStream);
+            InputStream inputStream = socket.getInputStream();
+            this.objectInputStream = new ObjectInputStream(inputStream);
         } catch (IOException e){ }
 
     }
@@ -27,31 +27,24 @@ public class Client{
         try {
             if(socket.isConnected() && objectOutputStream != null) {
 //                System.out.println("SENT message to port: " + socket.getPort() + " message is: [" + lv_to_send.getValue()[0].intValue() + ", "+  lv_to_send.getValue()[1].intValue()+", " + lv_to_send.getValue()[2].intValue()+"]");
-                if (!(lv_to_send instanceof Pair))
-                    System.out.println("");
                 objectOutputStream.writeObject(lv_to_send);
                 objectOutputStream.flush();
             }
         } catch (IOException e){
-            closeEverything(socket, objectOutputStream);
+            closeEverything();
         }
     }
 
-private void closeEverything(Socket socket, ObjectOutputStream objectOutputStream) {
-    try {
-        if (socket != null) {
-            socket.close();
+    public void closeEverything() {
+        try {
+            if (this.socket != null) {
+                this.socket.close();
+            }
+            if (this.objectOutputStream != null) {
+                this.objectOutputStream.close();
+            }
+        } catch (IOException e) {
+            e.printStackTrace();
         }
-        if (objectOutputStream != null) {
-            objectOutputStream.close();
-        }
-    } catch (IOException e) {
-        e.printStackTrace();
     }
-}
-
-//    @Override
-//    public void run(){
-//        listenToMessage();
-//    }
 }

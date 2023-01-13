@@ -48,5 +48,42 @@ public class ExManager {
             Thread thread = new Thread(network[i]);
             thread.start();
         }
+//        System.out.println();
+//        try {
+//            Thread.sleep(500);
+//        } catch (InterruptedException e) {e.printStackTrace();}
+
+//        for (int i = 0; i < network.length; i++) { network[i].clients_initialize();}
+//
+////        ArrayList<Thread> threads = new ArrayList<Thread>();
+//        ArrayList<Boolean> status = new ArrayList<>(network.length);
+//        for (int i = 0; i < network.length; i++) {
+//            status.add(false);
+//            Thread thread = new Thread(network[i]);
+//            thread.start();
+////            threads.add(thread);
+//        }
+//        for (int i = 0; i < network.length; i++){
+//            if (network[i].finished)
+//                status.add(i, true);
+//        }
+//
+//        while (status.contains(false)){
+////            waits
+//            for (int i = 0; i < network.length; i++) {
+//                if (network[i].finished)
+//                    status.add(i, true);
+//            }
+////            System.out.print("f");
+//        }
+////        System.out.println();
+////        for (int i = 0; i < network.length; i++) {
+////            try{
+////                threads.get(i).join();
+////            } catch (InterruptedException e){
+////                e.printStackTrace();
+////            }
+////        }
+//        System.out.println();
     }
 }
