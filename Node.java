@@ -111,16 +111,9 @@ public class Node extends Thread {
     public void sendMessage(Pair<Integer[], Double[]> lv) {
 //      broadcast message to neighbors (clients)
         for(int i = 0; i < clients.size(); i++){
-            clients.get(i).getValue().sendMessage(lv);
-//            if (lv.getKey()[0].intValue() == clients.get(i).getKey().intValue())
-//                continue;
-//
-//            Integer[] key = new Integer[]{lv.getKey()[0], clients.get(i).getKey()};
-//            Pair<Integer[], Double[]> loc = new Pair<>(key,(Double[]) lv.getValue());
-////            lv.setKey(new Integer[]{lv.getKey()[0], neighbor.getKey()});
-//            if (!(loc instanceof Pair))
-//                System.out.println();
-//            clients.get(i).getValue().sendMessage(loc);
+            Integer[] key = new Integer[]{lv.getKey()[0], clients.get(i).getKey()};
+            Pair<Integer[], Double[]> loc = new Pair<>(key,(Double[]) lv.getValue());
+            clients.get(i).getValue().sendMessage(loc);
         }
     }
 
@@ -155,18 +148,19 @@ public class Node extends Thread {
         Pair<Integer[], Double[]> lv = new Pair<>(new Integer[]{id, 0}, matrix[id - 1]);
         sendMessage(lv);
 
+
         while (updated.containsValue(false)) {
             ArrayList<Pair> responses = getMessages();
-            if(id == 1 && updated.get(3) && updated.get(4))
-                System.out.println();
             for (Pair lv_response : responses) {
                 Pair<Integer[], Double[]> response = (Pair<Integer[], Double[]>) lv_response;
                 int message_origin_id = response.getKey()[0].intValue();
+
                 if (!updated.get(message_origin_id)) {
                     Double[] vec = response.getValue();
                     for (int i = 0; i < num_of_nodes; i++)
                         update_matrix(message_origin_id, i + 1, vec[i]);
                     updated.put(message_origin_id, true);
+
                     sendMessage(lv_response);
                 }
             }
@@ -175,9 +169,6 @@ public class Node extends Thread {
             c.getValue().closeEverything();
         }
         finished = true;
-        try{
-        Thread.sleep(100);}
-        catch (InterruptedException e) {}
     }
 
     public void killClients() {

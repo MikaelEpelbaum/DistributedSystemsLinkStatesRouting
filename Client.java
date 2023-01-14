@@ -26,9 +26,11 @@ public class Client{
     public void sendMessage(Pair<Integer[], Double[]> lv_to_send){
         try {
             if(socket.isConnected() && objectOutputStream != null) {
-//                System.out.println("SENT message to port: " + socket.getPort() + " message is: [" + lv_to_send.getValue()[0].intValue() + ", "+  lv_to_send.getValue()[1].intValue()+", " + lv_to_send.getValue()[2].intValue()+"]");
                 objectOutputStream.writeObject(lv_to_send);
                 objectOutputStream.flush();
+                System.out.println("Client: " +lv_to_send.getKey()[0] + " -> "+ lv_to_send.getKey()[1]);
+                if (lv_to_send.getKey()[0] == 2 && lv_to_send.getKey()[1]==1)
+                    System.out.println("from 2 to 1 sent");
             }
         } catch (IOException e){
             closeEverything();

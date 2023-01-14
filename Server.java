@@ -26,11 +26,11 @@ public class Server  extends Thread{
                 Pair<Integer[], Double[]> temp = (Pair<Integer[], Double[]>) o;
                 if (temp != null) {
                     lv = temp;
-                    System.out.println("Got message");
-//                    System.out.println("Server got message on port: " + socket.getLocalPort() + " message is: [" + lv.getValue()[0].intValue() + ", " + lv.getValue()[1].intValue() + ", " + lv.getValue()[2].intValue() + "]");
+                    System.out.println("Server: "+id+" Got message: " + lv.getKey()[0] + " -> "+ lv.getKey()[1]);
                 }
             } catch(IOException | ClassNotFoundException e) { }
         }
+        System.out.println("server socket "+ id + "has closed");
     }
     public Pair<Integer[], Double[]>  getLv() {return lv;}
 
