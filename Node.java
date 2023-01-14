@@ -6,10 +6,13 @@ public class Node extends Thread {
     private int id;
     public ArrayList<Pair> neighbors;
     public ArrayList<Pair> servers;
+    public ArrayList<Thread> serversThreads;
     public ArrayList<Pair<Integer, Client>> clients;
     public int num_of_nodes;
     public Double[][] matrix;
+    public static boolean staticFinished = false;
     public boolean finished;
+
 
     /**
      * Constructor
@@ -30,7 +33,8 @@ public class Node extends Thread {
         neighbors_initialize(line);
         servers = new ArrayList<>(neighbors.size());
         clients = new ArrayList<>(neighbors.size());
-        servers_initialize();
+        serversThreads = new ArrayList<>(neighbors.size());
+//        servers_initialize();
     }
 
     public int get_id() {
@@ -66,11 +70,11 @@ public class Node extends Thread {
                 Server s = new Server(serverSocket, id);
                 Thread t = new Thread(s);
                 t.start();
+                serversThreads.add(t);
                 servers.add(new Pair(neighbor.getKey(), s));
             } catch (IOException e){
             }
         }
-//        System.out.println(id +" servers have been initialised");
     }
 
     public void clients_initialize(){
@@ -83,7 +87,6 @@ public class Node extends Thread {
             } catch (IOException e){
             }
         }
-//        System.out.println(id + " clients have been initialised");
     }
 
 // 4 1 8.9 13821 6060 2 1.0 17757 28236 5 1.5 1603 24233 3 6.6 27781 1213
@@ -118,26 +121,32 @@ public class Node extends Thread {
     }
 
     public ArrayList<Pair> getMessages(){
-        HashMap<Integer, Pair> neighbors_lv = new HashMap<Integer, Pair>();
-        while(neighbors_lv.size() < neighbors.size()){
-            for(int i = 0; i < servers.size(); i ++){
-                Pair<Integer[], Double[]> lv = ((Server)servers.get(i).getValue()).getLv();
-                if (lv != null) {
-                    if (lv.getKey()[0].intValue() == id)
-                        continue;
-                    Pair<Integer, Map> temp_neighbor = neighbors.get(i);
-                    neighbors_lv.put(temp_neighbor.getKey().intValue(), lv);
-                }
-            }
+        ArrayList<Pair> r = new ArrayList<>();
+        for(int i = 0; i < servers.size(); i ++){
+            r.addAll(((Server)servers.get(i).getValue()).getLvs());
         }
-        Collection<Pair> values = neighbors_lv.values();
-        ArrayList<Pair> r = new ArrayList<>(values);
         return r;
+//        HashMap<Integer, Pair> neighbors_lv = new HashMap<Integer, Pair>();
+//        while(neighbors_lv.size() < neighbors.size()){
+//            for(int i = 0; i < servers.size(); i ++){
+//                Pair<Integer[], Double[]> lv = ((Server)servers.get(i).getValue()).getLv();
+//                if (lv != null) {
+//                    if (lv.getKey()[0].intValue() == id)
+//                        continue;
+//                    Pair<Integer, Map> temp_neighbor = neighbors.get(i);
+//                    neighbors_lv.put(temp_neighbor.getKey().intValue(), lv);
+//                }
+//            }
+//        }
+//        Collection<Pair> values = neighbors_lv.values();
+//        ArrayList<Pair> r = new ArrayList<>(values);
+//        return r;
     }
 
 
     @Override
     public void run(){
+        servers_initialize();
         clients_initialize();
         Map<Integer, Boolean> updated = new HashMap<>();
         for (int i = 0; i < num_of_nodes+1; i++)
@@ -148,8 +157,7 @@ public class Node extends Thread {
         Pair<Integer[], Double[]> lv = new Pair<>(new Integer[]{id, 0}, matrix[id - 1]);
         sendMessage(lv);
 
-
-        while (updated.containsValue(false)) {
+        while (updated.containsValue(false) && !finished && !staticFinished) {
             ArrayList<Pair> responses = getMessages();
             for (Pair lv_response : responses) {
                 Pair<Integer[], Double[]> response = (Pair<Integer[], Double[]>) lv_response;
@@ -160,15 +168,17 @@ public class Node extends Thread {
                     for (int i = 0; i < num_of_nodes; i++)
                         update_matrix(message_origin_id, i + 1, vec[i]);
                     updated.put(message_origin_id, true);
-
+                    System.out.println("node: " + id + " has got a message from: " + message_origin_id);
+                    if(message_origin_id == id)
+                        continue;
                     sendMessage(lv_response);
                 }
             }
+            if(!updated.containsValue(false)) {
+                finished = true;
+            }
         }
-        for (Pair<Integer, Client> c : clients){
-            c.getValue().closeEverything();
-        }
-        finished = true;
+
     }
 
     public void killClients() {

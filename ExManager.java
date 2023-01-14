@@ -52,17 +52,34 @@ public class ExManager {
 
 //  link state routing
     public void start() {
+        Node.staticFinished = false;
         ArrayList<Thread> threads = new ArrayList<>(num_of_nodes);
+        boolean[] status = new boolean[num_of_nodes];
+
         for (int i = 0; i < num_of_nodes; i++) {
             Thread thread = new Thread(network[i]);
-            threads.add(thread);
             thread.start();
+            threads.add(thread);
+            status[i] = false;
         }
-        for (int i = 0; i < num_of_nodes; i++) {
-            try {
-                threads.get(i).join(50);
-            } catch (InterruptedException e) {}
+
+        while(!Node.staticFinished) {
+            boolean temp = true;
+            for (int i = 0; i < num_of_nodes; i++) {
+                status[i] = network[i].finished;
+            }
+            for (int i = 0; i < num_of_nodes; i++) {
+                if (!status[i])
+                    temp = false;
+            }
+            Node.staticFinished = temp;
         }
-        threads = null;
+        System.out.println(true);
+//        for(Thread t: threads){
+//            try {
+//                t.join();
+//            } catch (InterruptedException e) {
+//            }
+//        }
     }
 }

@@ -28,9 +28,7 @@ public class Client{
             if(socket.isConnected() && objectOutputStream != null) {
                 objectOutputStream.writeObject(lv_to_send);
                 objectOutputStream.flush();
-                System.out.println("Client: " +lv_to_send.getKey()[0] + " -> "+ lv_to_send.getKey()[1]);
-                if (lv_to_send.getKey()[0] == 2 && lv_to_send.getKey()[1]==1)
-                    System.out.println("from 2 to 1 sent");
+//                System.out.println("Client: " +lv_to_send.getKey()[0] + " -> "+ lv_to_send.getKey()[1]);
             }
         } catch (IOException e){
             closeEverything();
