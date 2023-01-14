@@ -8,7 +8,7 @@ public class Client{
     private Socket socket;
     private ObjectOutputStream objectOutputStream;
     private ObjectInputStream objectInputStream;
-    private int id;
+    public int id;
 
 
     public Client(Socket socket, int id){
@@ -23,12 +23,12 @@ public class Client{
 
     }
 
-    public void sendMessage(Pair<Integer[], Double[]> lv_to_send){
+    public void sendMessage(Pair<Integer, Double[]> lv_to_send){
         try {
             if(socket.isConnected() && objectOutputStream != null) {
                 objectOutputStream.writeObject(lv_to_send);
                 objectOutputStream.flush();
-//                System.out.println("Client: " +lv_to_send.getKey()[0] + " -> "+ lv_to_send.getKey()[1]);
+//                System.out.println("client: "+ id+" sent message created by: "+ lv_to_send.getKey()+ " with values: " + Arrays.toString(lv_to_send.getValue()));
             }
         } catch (IOException e){
             closeEverything();

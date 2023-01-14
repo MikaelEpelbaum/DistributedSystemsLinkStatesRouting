@@ -57,6 +57,8 @@ public class ExManager {
         boolean[] status = new boolean[num_of_nodes];
 
         for (int i = 0; i < num_of_nodes; i++) {
+            network[i].finished = false;
+            network[i].cleanServers();
             Thread thread = new Thread(network[i]);
             thread.start();
             threads.add(thread);
@@ -74,12 +76,9 @@ public class ExManager {
             }
             Node.staticFinished = temp;
         }
-        System.out.println(true);
-//        for(Thread t: threads){
-//            try {
-//                t.join();
-//            } catch (InterruptedException e) {
-//            }
-//        }
+        try {Thread.sleep(1000);} catch (InterruptedException e){}
+        for (int i = 0; i < network.length; i++) {
+            network[i].killClients();
+        }
     }
 }
