@@ -23,11 +23,12 @@ public class Client{
 
     }
 
-    public void sendMessage(Pair<Integer, Double[]> lv_to_send){
+    public void sendMessage(Map<Integer, Double[]> lv_to_send){
         try {
             if(socket.isConnected() && objectOutputStream != null) {
                 objectOutputStream.writeObject(lv_to_send);
                 objectOutputStream.flush();
+//                System.out.println("Client: " + id + " has sent: " + lv_to_send.keySet().toString());
 //                System.out.println("client: "+ id+" sent message created by: "+ lv_to_send.getKey()+ " with values: " + Arrays.toString(lv_to_send.getValue()));
             }
         } catch (IOException e){

@@ -10,7 +10,6 @@ public class Node extends Thread {
     public ArrayList<Pair<Integer, Client>> clients;
     public int num_of_nodes;
     public Double[][] matrix;
-    public static boolean staticFinished = false;
     public boolean finished;
 
 
@@ -66,7 +65,7 @@ public class Node extends Thread {
             try {
                 int port = ((Double) neighbor.getValue().get("listen")).intValue();
                 ServerSocket serverSocket = new ServerSocket(port);
-                Server s = new Server(serverSocket, id, num_of_nodes);
+                Server s = new Server(serverSocket, id);
                 Thread t = new Thread(s);
                 t.start();
                 serversThreads.add(t);
@@ -76,9 +75,9 @@ public class Node extends Thread {
         }
     }
 
-    public void cleanServers(){
-        for(int i = 0; i <servers.size(); i++){
-            ((Server)servers.get(i).getValue()).lvs = new ArrayList<>();
+    public void servers_clean(){
+        for(int i = 0; i < servers.size(); i ++){
+            ((Server)servers.get(i).getValue()).queue = new ArrayDeque<>();
         }
     }
 
@@ -110,21 +109,18 @@ public class Node extends Thread {
         }
     }
 
-    public void sendMessage(Pair<Integer, Double[]> lv) {
-//      broadcast message to neighbors (clients)
+    public void sendMessage(Map<Integer, Double[]> lv) {
+//      broadcast message
         for(int i = 0; i < clients.size(); i++){
             clients.get(i).getValue().sendMessage(lv);
         }
     }
 
     public Map<Integer, Double[]> getMessages(){
-        ArrayList<Pair> r = new ArrayList<>();
-        for(int i = 0; i < servers.size(); i ++){
-            r.addAll(((Server)servers.get(i).getValue()).getLvs());
-        }
         Map<Integer, Double[]> m = new HashMap<>();
-        for (Pair<Integer, Double[]> p: r) {
-            m.put(p.getKey(), p.getValue());
+        for(int i = 0; i < servers.size(); i ++){
+            if(!((Server)servers.get(i).getValue()).queue.isEmpty())
+                m.putAll(((Server)servers.get(i).getValue()).queue.remove());
         }
         return m;
     }
@@ -139,26 +135,28 @@ public class Node extends Thread {
         updated.put(id, true);
         updated.put(0, true);
 
-        Pair<Integer, Double[]> lv = new Pair<>(id, matrix[id - 1]);
-//        System.out.println("Initial messages id = " + id + " vec: "+ Arrays.toString(lv.getValue()));
-        sendMessage(lv);
+        Map<Integer, Double[]> lvs = new HashMap<>();
+        lvs.put(id, matrix[id - 1]);
+        sendMessage(lvs);
 
-        while (updated.containsValue(false) && !finished && !staticFinished) {
+        while (updated.containsValue(false)) {
             Map<Integer, Double[]> responses = getMessages();
+            Map<Integer, Double[]> toSend= new HashMap<>();
             for (Integer message_origin_id: responses.keySet()) {
                 if (!updated.get(message_origin_id)) {
+                    toSend.put(message_origin_id, responses.get(message_origin_id));
                     Double[] vec = responses.get(message_origin_id);
                     for (int i = 0; i < num_of_nodes; i++)
                         update_matrix(message_origin_id, i + 1, vec[i]);
                     updated.put(message_origin_id, true);
 //                    System.out.println("node: " + id + " has got a message from: " + message_origin_id);
-                    sendMessage(new Pair(message_origin_id, vec));
                 }
             }
-            if(!updated.containsValue(false)) {
-                finished = true;
-            }
+            if(toSend.size() > 0)
+                sendMessage(toSend);
         }
+        this.finished = true;
+//        System.out.println(id + " has finished");
     }
 
     public void killClients() {
