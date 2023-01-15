@@ -127,27 +127,6 @@ public class Node extends Thread {
             m.put(p.getKey(), p.getValue());
         }
         return m;
-//        Map<Integer, Double[]> r = new HashMap();
-//        for(int i = 0; i < servers.size(); i ++) {
-//            Map<Integer, Double[]> temp = ((Server) servers.get(i).getValue()).getLvs();
-//            if(temp != null){
-//                for(int j = 0; j <temp.size(); j++){
-//                    r.put(temp., temp.get(origin_id));
-//                }
-//
-//
-//                try{
-//                for (Integer origin_id : temp.keySet()) {
-////                    if (r.containsKey(origin_id))
-////                        continue;
-//                    r.put(origin_id, temp.get(origin_id));
-//                    }
-//                } catch (ConcurrentModificationException e){
-//                        System.out.println(e);
-//                }
-//            }
-//        }
-//        return r;
     }
 
 
